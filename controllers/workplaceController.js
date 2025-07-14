@@ -114,10 +114,41 @@ const deleteWorkplace = async (req, res) => {
   }
 };
 
+// Toggle workplace active status
+const toggleWorkplace = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const workplace = await Workplace.findOne({
+      _id: id,
+      userId: req.user._id,
+    });
+
+    if (!workplace) {
+      return res.status(404).json({ error: "Workplace not found" });
+    }
+
+    // Toggle the isActive status
+    workplace.isActive = !workplace.isActive;
+    const updatedWorkplace = await workplace.save();
+
+    const statusText = updatedWorkplace.isActive ? "Aktif" : "Pasif";
+
+    res.status(200).json({
+      message: `İş yeri durumu başarıyla güncellendi. Yeni durum: ${statusText}`,
+      workplace: updatedWorkplace,
+    });
+  } catch (error) {
+    console.error("Error toggling workplace:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 module.exports = {
   createWorkplace,
   getActiveWorkplaces,
   getAllWorkplaces,
   updateWorkplace,
   deleteWorkplace,
+  toggleWorkplace,
 };
